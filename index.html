@@ -96,6 +96,41 @@
       background: white;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+    @media (max-width: 600px) {
+  body {
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
+  h1 {
+    font-size: 22px;
+    padding: 10px;
+  }
+
+  .photo-card {
+    width: 90%;
+  }
+
+  .upload-section input[type="text"],
+  .upload-section input[type="file"] {
+    width: 90%;
+    max-width: 300px;
+  }
+
+  #map {
+    position: static;
+    width: 100%;
+    height: 300px;
+    margin: 20px auto;
+    border-radius: 10px;
+  }
+
+  .sort-buttons button {
+    margin: 5px;
+    font-size: 14px;
+  }
+}
+
   </style>
 </head>
 <body>
