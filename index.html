@@ -8,13 +8,14 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
-
   <style>
     body {
       background-image: url('./images/background.webp');
       background-size: cover;
       background-position: center;
       font-family: 'M PLUS Rounded 1c', 'Noto Serif JP', serif;
+      margin: 0;
+      padding: 0;
     }
 
     h1 {
@@ -33,6 +34,7 @@
       text-align: center;
       margin-bottom: 20px;
     }
+
     input[type="file"], input[type="text"], button {
       margin: 5px;
       padding: 8px;
@@ -51,11 +53,11 @@
     }
 
     .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 15px;
-      justify-items: center;
-      padding: 0 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
       box-sizing: border-box;
     }
 
@@ -64,14 +66,17 @@
       padding: 10px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      width: 100%;
+      width: 90vw;
       max-width: 300px;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .photo-card img {
       width: 100%;
       border-radius: 8px;
+      object-fit: cover;
     }
 
     .comment, .meta {
@@ -105,85 +110,50 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    /* レスポンシブ対応 */
     @media (max-width: 900px) {
-      h1 {
-        font-size: 2.2rem;
-      }
-
-      .photo-card {
-        max-width: 100%;
-      }
-
-      .upload-section input[type="text"],
-      .upload-section input[type="file"],
-      .upload-section button {
-        width: 90%;
-        max-width: 300px;
-      }
-
       #map {
+        position: static;
         width: 90%;
         height: 300px;
-        top: auto;
-        right: auto;
         margin: 20px auto;
-        position: relative;
       }
     }
 
     @media (max-width: 600px) {
       h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
       }
 
-      .sort-buttons button {
-        margin: 5px;
-        font-size: 14px;
+      .photo-card {
+        width: 95%;
       }
     }
 
     @media (max-width: 480px) {
       h1 {
         font-size: 1.6rem;
-        padding: 8px;
-      }
-
-      .photo-card {
-        padding: 8px;
-        font-size: 13px;
       }
 
       .sort-buttons button {
         font-size: 13px;
         padding: 6px 12px;
       }
-
-      #map {
-        height: 250px;
-      }
     }
   </style>
 </head>
 <body>
-
   <h1>自然のアルバム</h1>
-
   <div class="upload-section">
     <input type="file" id="photoInput" accept="image/*" />
     <input type="text" id="photoComment" placeholder="コメントを入力" />
     <button onclick="addPhoto()">投稿</button>
   </div>
-
   <div class="sort-buttons">
     <button onclick="sortPosts('desc')">新しい順</button>
     <button onclick="sortPosts('asc')">古い順</button>
   </div>
-
   <div class="gallery" id="gallery"></div>
-
   <div id="map"></div>
-
   <script>
     const gallery = document.getElementById('gallery');
     let posts = JSON.parse(localStorage.getItem('photoPosts')) || [];
@@ -268,7 +238,6 @@
     function addPhoto() {
       const fileInput = document.getElementById('photoInput');
       const commentInput = document.getElementById('photoComment');
-
       const file = fileInput.files[0];
       const comment = commentInput.value;
 
@@ -289,7 +258,7 @@
           const takenDate = EXIF.getTag(this, "DateTimeOriginal") || "不明";
           const lat = getGPSDecimal(EXIF.getTag(this, "GPSLatitude"), EXIF.getTag(this, "GPSLatitudeRef"));
           const lon = getGPSDecimal(EXIF.getTag(this, "GPSLongitude"), EXIF.getTag(this, "GPSLongitudeRef"));
-          const location = (lat && lon) ? `📍緯度:${lat.toFixed(6)}, 経度:${lon.toFixed(6)}` : "📍位置情報なし";
+          const location = (lat && lon) ? `\u{1F4CD}緯度:${lat.toFixed(6)}, 経度:${lon.toFixed(6)}` : "\u{1F4CD}位置情報なし";
 
           const post = {
             image: e.target.result,
