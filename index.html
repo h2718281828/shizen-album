@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&family=Noto+Serif+JP&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>自然のアルバム</title>
-
-  <!-- Leaflet CSS & JS -->
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&family=Noto+Serif+JP&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <!-- EXIF -->
   <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
   <style>
@@ -18,11 +14,10 @@
       background-image: url('./images/background.webp');
       background-size: cover;
       background-position: center;
+      font-family: 'M PLUS Rounded 1c', 'Noto Serif JP', serif;
     }
 
-
     h1 {
-      font-family: 'M PLUS Rounded 1c', 'Noto Serif JP', serif;
       font-size: 3rem;
       font-weight: 700;
       background: linear-gradient(90deg, #4caf50, #81c784, #a5d6a7);
@@ -31,46 +26,60 @@
       background-clip: text;
       text-fill-color: transparent;
       text-align: center;
-      margin-bottom: 10px;
+      margin: 20px 0 10px;
     }
 
     .upload-section {
       text-align: center;
       margin-bottom: 20px;
     }
-    input[type="file"], input[type="text"] {
+    input[type="file"], input[type="text"], button {
       margin: 5px;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 5px;
+      box-sizing: border-box;
     }
+
     button {
       cursor: pointer;
     }
+
     .sort-buttons {
       text-align: center;
       margin-bottom: 10px;
     }
+
     .gallery {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 15px;
-      justify-content: center;
+      justify-items: center;
+      padding: 0 10px;
+      box-sizing: border-box;
     }
+
     .photo-card {
       background: white;
       padding: 10px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      width: 250px;
+      width: 100%;
+      max-width: 300px;
       position: relative;
     }
+
     .photo-card img {
       width: 100%;
       border-radius: 8px;
     }
+
     .comment, .meta {
       margin-top: 6px;
       font-size: 14px;
       color: #555;
     }
+
     .delete-btn {
       position: absolute;
       top: 8px;
@@ -83,7 +92,6 @@
       font-size: 12px;
     }
 
-    /* 右上に地図固定表示 */
     #map {
       position: fixed;
       top: 20px;
@@ -96,41 +104,65 @@
       background: white;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 900px) {
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      .photo-card {
+        max-width: 100%;
+      }
+
+      .upload-section input[type="text"],
+      .upload-section input[type="file"],
+      .upload-section button {
+        width: 90%;
+        max-width: 300px;
+      }
+
+      #map {
+        width: 90%;
+        height: 300px;
+        top: auto;
+        right: auto;
+        margin: 20px auto;
+        position: relative;
+      }
+    }
+
     @media (max-width: 600px) {
-  body {
-    background-size: cover;
-    background-attachment: fixed;
-  }
+      h1 {
+        font-size: 1.8rem;
+      }
 
-  h1 {
-    font-size: 22px;
-    padding: 10px;
-  }
+      .sort-buttons button {
+        margin: 5px;
+        font-size: 14px;
+      }
+    }
 
-  .photo-card {
-    width: 90%;
-  }
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.6rem;
+        padding: 8px;
+      }
 
-  .upload-section input[type="text"],
-  .upload-section input[type="file"] {
-    width: 90%;
-    max-width: 300px;
-  }
+      .photo-card {
+        padding: 8px;
+        font-size: 13px;
+      }
 
-  #map {
-    position: static;
-    width: 100%;
-    height: 300px;
-    margin: 20px auto;
-    border-radius: 10px;
-  }
+      .sort-buttons button {
+        font-size: 13px;
+        padding: 6px 12px;
+      }
 
-  .sort-buttons button {
-    margin: 5px;
-    font-size: 14px;
-  }
-}
-
+      #map {
+        height: 250px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -150,161 +182,138 @@
 
   <div class="gallery" id="gallery"></div>
 
-  <!-- 右上固定地図 -->
   <div id="map"></div>
 
-<script>
-  const gallery = document.getElementById('gallery');
-  let posts = JSON.parse(localStorage.getItem('photoPosts')) || [];
+  <script>
+    const gallery = document.getElementById('gallery');
+    let posts = JSON.parse(localStorage.getItem('photoPosts')) || [];
 
-  // Leaflet地図初期化
-  const map = L.map('map').setView([39.7036, 141.1527], 6); // 岩手県中心あたり
+    const map = L.map('map').setView([39.7036, 141.1527], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    let markersGroup = L.layerGroup().addTo(map);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
+    function updateMapMarkers() {
+      markersGroup.clearLayers();
+      posts.forEach((post, i) => {
+        if(post.lat && post.lon){
+          const marker = L.marker([post.lat, post.lon]).addTo(markersGroup);
+          const popupHtml = `
+            <div style="max-width: 250px;">
+              <img src="${post.image}" alt="写真" style="width: 100%; border-radius: 5px;" />
+              <p><strong>コメント:</strong> ${post.comment || 'なし'}</p>
+              <p style="font-size:12px; color:#666;">撮影日時: ${post.takenDate}</p>
+              <p style="font-size:12px; color:#666;">投稿日時: ${post.date}</p>
+              <button onclick="deletePost(${i})" style="background:#ff4d4d; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">削除</button>
+            </div>
+          `;
+          marker.bindPopup(popupHtml);
+        }
+      });
+    }
 
-  // マーカーグループ管理用
-  let markersGroup = L.layerGroup().addTo(map);
-
-  // 投稿を地図に反映
-  function updateMapMarkers() {
-    markersGroup.clearLayers(); // 古いマーカー全部消す
-    posts.forEach((post, i) => {
-      if(post.lat && post.lon){
-        const marker = L.marker([post.lat, post.lon]).addTo(markersGroup);
-        const popupHtml = `
-          <div style="max-width: 250px;">
-            <img src="${post.image}" alt="写真" style="width: 100%; border-radius: 5px;" />
-            <p style="margin:5px 0;"><strong>コメント:</strong> ${post.comment || 'なし'}</p>
-            <p style="margin:2px 0; font-size:12px; color:#666;">撮影日時: ${post.takenDate}</p>
-            <p style="margin:2px 0; font-size:12px; color:#666;">投稿日時: ${post.date}</p>
-            <button onclick="deletePost(${i})" style="background:#ff4d4d; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">削除</button>
-          </div>
+    function renderPosts() {
+      gallery.innerHTML = '';
+      posts.forEach((post, index) => {
+        const card = document.createElement('div');
+        card.className = 'photo-card';
+        card.innerHTML = `
+          <button class="delete-btn" onclick="deletePost(${index})">✕</button>
+          <img src="${post.image}" alt="自然の写真" />
+          <div class="comment">${post.comment || ''}</div>
+          <div class="meta">投稿日時: ${post.date}</div>
+          <div class="meta">撮影日時: ${post.takenDate}</div>
+          <div class="meta">${post.location}</div>
         `;
-        marker.bindPopup(popupHtml);
+        gallery.appendChild(card);
+      });
+      updateMapMarkers();
+    }
+
+    function deletePost(index) {
+      if(confirm('この投稿を削除してもいい？')){
+        posts.splice(index, 1);
+        localStorage.setItem('photoPosts', JSON.stringify(posts));
+        renderPosts();
       }
-    });
-  }
+    }
 
-  // 投稿表示
-  function renderPosts() {
-    gallery.innerHTML = '';
-    posts.forEach((post, index) => {
-      const card = document.createElement('div');
-      card.className = 'photo-card';
-      card.innerHTML = `
-        <button class="delete-btn" onclick="deletePost(${index})">✕</button>
-        <img src="${post.image}" alt="自然の写真" />
-        <div class="comment">${post.comment || ''}</div>
-        <div class="meta">投稿日時: ${post.date}</div>
-        <div class="meta">撮影日時: ${post.takenDate}</div>
-        <div class="meta">${post.location}</div>
-      `;
-      gallery.appendChild(card);
-    });
-    updateMapMarkers();
-  }
-
-  // 削除処理
-  function deletePost(index) {
-    if(confirm('この投稿を削除してもいい？')){
-      posts.splice(index,1);
-      localStorage.setItem('photoPosts', JSON.stringify(posts));
+    function sortPosts(order) {
+      posts.sort((a, b) => {
+        function parseDate(dateStr){
+          if(!dateStr || dateStr === '不明') return new Date(0);
+          const fixedStr = dateStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+          return new Date(fixedStr);
+        }
+        const dateA = parseDate(a.takenDate) || new Date(a.date);
+        const dateB = parseDate(b.takenDate) || new Date(b.date);
+        return order === 'asc' ? dateA - dateB : dateB - dateA;
+      });
       renderPosts();
     }
-  }
 
-  // 日付でソート
-  function sortPosts(order) {
-    posts.sort((a, b) => {
-      // 撮影日時の"YYYY:MM:DD hh:mm:ss"形式か不明か判定してパース。撮影日時不明なら投稿日時で比較
-      function parseDate(dateStr){
-        if(!dateStr || dateStr === '不明') return new Date(0); //かなり昔にする
-        // Exifの撮影日時は "YYYY:MM:DD hh:mm:ss" 形式
-        const fixedStr = dateStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
-        return new Date(fixedStr);
+    function getGPSDecimal(coord, ref) {
+      if (!coord || !ref) return null;
+      const d = coord[0].numerator / coord[0].denominator;
+      const m = coord[1].numerator / coord[1].denominator;
+      const s = coord[2].numerator / coord[2].denominator;
+      let decimal = d + m / 60 + s / 3600;
+      if (ref === "S" || ref === "W") {
+        decimal = -decimal;
+      }
+      return decimal;
+    }
+
+    function addPhoto() {
+      const fileInput = document.getElementById('photoInput');
+      const commentInput = document.getElementById('photoComment');
+
+      const file = fileInput.files[0];
+      const comment = commentInput.value;
+
+      if (!file) {
+        alert("画像を選んでね！");
+        return;
       }
 
-      const dateA = parseDate(a.takenDate) || new Date(a.date);
-      const dateB = parseDate(b.takenDate) || new Date(b.date);
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        EXIF.getData(file, function () {
+          const now = new Date();
+          const dateStr = now.toLocaleString('ja-JP', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
 
-      return order === 'asc' ? dateA - dateB : dateB - dateA;
-    });
-    renderPosts();
-  }
+          const takenDate = EXIF.getTag(this, "DateTimeOriginal") || "不明";
+          const lat = getGPSDecimal(EXIF.getTag(this, "GPSLatitude"), EXIF.getTag(this, "GPSLatitudeRef"));
+          const lon = getGPSDecimal(EXIF.getTag(this, "GPSLongitude"), EXIF.getTag(this, "GPSLongitudeRef"));
+          const location = (lat && lon) ? `📍緯度:${lat.toFixed(6)}, 経度:${lon.toFixed(6)}` : "📍位置情報なし";
 
-  // GPS座標を10進数に変換する関数
-  function getGPSDecimal(coord, ref) {
-    if (!coord || !ref) return null;
-    const d = coord[0].numerator / coord[0].denominator;
-    const m = coord[1].numerator / coord[1].denominator;
-    const s = coord[2].numerator / coord[2].denominator;
-    let decimal = d + m / 60 + s / 3600;
-    if (ref === "S" || ref === "W") {
-      decimal = -decimal;
-    }
-    return decimal;
-  }
+          const post = {
+            image: e.target.result,
+            comment: comment,
+            date: dateStr,
+            takenDate: takenDate,
+            location: location,
+            lat: lat,
+            lon: lon
+          };
 
-  // 投稿追加
-  function addPhoto() {
-    const fileInput = document.getElementById('photoInput');
-    const commentInput = document.getElementById('photoComment');
+          if (posts.length >= 5) posts.shift();
+          posts.push(post);
+          localStorage.setItem('photoPosts', JSON.stringify(posts));
+          renderPosts();
 
-    const file = fileInput.files[0];
-    const comment = commentInput.value;
-
-    if (!file) {
-      alert("画像を選んでね！");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      EXIF.getData(file, function () {
-        const now = new Date();
-        const dateStr = now.toLocaleString('ja-JP', {
-          year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit'
+          fileInput.value = '';
+          commentInput.value = '';
         });
+      };
+      reader.readAsDataURL(file);
+    }
 
-        const takenDate = EXIF.getTag(this, "DateTimeOriginal") || "不明";
-        const lat = getGPSDecimal(EXIF.getTag(this, "GPSLatitude"), EXIF.getTag(this, "GPSLatitudeRef"));
-        const lon = getGPSDecimal(EXIF.getTag(this, "GPSLongitude"), EXIF.getTag(this, "GPSLongitudeRef"));
-        const location = (lat && lon) ? `📍緯度:${lat.toFixed(6)}, 経度:${lon.toFixed(6)}` : "📍位置情報なし";
-
-        const post = {
-          image: e.target.result,
-          comment: comment,
-          date: dateStr,
-          takenDate: takenDate,
-          location: location,
-          lat: lat,
-          lon: lon
-        };
-
-        // 古い投稿自動削除(5件まで保持)
-        if (posts.length >= 5) {
-          posts.shift();
-        }
-
-        posts.push(post);
-        localStorage.setItem('photoPosts', JSON.stringify(posts));
-
-        renderPosts();
-
-        fileInput.value = '';
-        commentInput.value = '';
-      });
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  // ページ読み込み時に描画
-  renderPosts();
-</script>
-
+    renderPosts();
+  </script>
 </body>
 </html>
