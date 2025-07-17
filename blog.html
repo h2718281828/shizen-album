@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宮田颯のブログ</title>
+  <!-- Font Awesome CDN -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .background-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('images/top2.jpeg');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.2;
+      z-index: -1;
+    }
+    header {
+      background-color: #4c9aff;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+    section {
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      color: #4c9aff;
+      margin-bottom: 10px;
+    }
+    article {
+      margin-bottom: 60px;
+    }
+    a {
+      color: #4c9aff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* 記事内のテキストと画像の横並び */
+    .content-wrapper {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .content-wrapper img {
+      width: 200px;
+      height: auto;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .content-text {
+      flex: 1;
+    }
+
+    /* スマホなど狭い画面では縦並びに */
+    @media (max-width: 600px) {
+      .content-wrapper {
+        flex-direction: column;
+      }
+      .content-wrapper img {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+
+    /* index.htmlに戻るホームアイコン */
+    .back-home {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #4c9aff;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 50%;
+      font-size: 24px;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      z-index: 1000;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-home:hover {
+      background-color: #357ab8;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-image"></div>
+
+  <header>
+    <h1>宮田颯のブログ</h1>
+  </header>
+
+  <!-- index.htmlに戻るアイコン -->
+  <a href="index.html" class="back-home" title="トップページに戻る">
+    <i class="fas fa-home"></i>
+  </a>
+
+  <main>
+    <section>
+      <article id="fieldwork">
+        <h1>災害フィールドワークで学んだこと</h1>
+        <div class="content-wrapper">
+          <img src="images/fieldwork.jpg" alt="災害フィールドワークの写真" />
+          <div class="content-text">
+            <p><strong>2025年6月1日</strong></p>
+            <p>岩手県陸前高田市と大船渡市で実施された災害フィールドワークに参加しました。津波伝承館の視察や防災アドベンチャー体験を通じて、防災意識の大切さを学びました。</p>
+          </div>
+        </div>
+      </article>
+
+      <hr />
+
+      <article id="english">
+        <h1>滝沢総合公園に遊びに行きました</h1>
+        <div class="content-wrapper">
+          <img src="images/english.jpg" alt="滝沢総合公園の写真" />
+          <div class="content-text">
+            <p><strong>2025年6月25日</strong></p>
+            <p>友人と一緒に滝沢総合公園へ遊びに行き、自然の中でリフレッシュしました。広々とした芝生や遊具が充実していてとても楽しかったです。</p>
+          </div>
+        </div>
+      </article>
+
+      <hr />
+
+      <article id="books">
+        <h1>ドラムスティックを新調しました</h1>
+        <div class="content-wrapper">
+          <img src="images/books.jpg" alt="ドラムスティックの写真" />
+          <div class="content-text">
+            <p><strong>2025年7月10日</strong></p>
+            <p>音楽活動のために新しいドラムスティックを購入しました。これで演奏の幅が広がり、より楽しくなりそうです。</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
